@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -9,9 +10,14 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] float chaseRange = 5f;
     NavMeshAgent navMeshAgent;
 
+    // whether player is in range
+    bool isProvoked;
+
     // this is to make sure that the agent doesnt think it's right next to target
     // when it is first spawned
     float distanceToTarget = Mathf.Infinity;
+
+
     void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
@@ -19,11 +25,41 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
+        if (isProvoked)
+        {
+            EngageTarget();
+        }
         distanceToTarget = Vector3.Distance(target.position, transform.position);
         if (distanceToTarget <= chaseRange)
         {
-            navMeshAgent.SetDestination(target.position);
+            // we do this so that it keeps chasing even if the target is out of distance
+            // navMeshAgent.SetDestination(target.position); // if we put this here, this object will stop chasing once target out of range
+            isProvoked = true;
+            
         }
+    }
+
+    private void EngageTarget()
+    {
+        if (distanceToTarget >= navMeshAgent.stoppingDistance)
+        {
+            ChaseTarget();
+        }
+
+        if (distanceToTarget <= navMeshAgent.stoppingDistance)
+        {
+            AttackTarget();
+        }
+    }
+
+    private void AttackTarget()
+    {
+        // attack the target
+    }
+
+    private void ChaseTarget()
+    {
+        navMeshAgent.SetDestination(target.position);
     }
 
     private void OnDrawGizmosSelected()
